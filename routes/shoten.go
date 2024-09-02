@@ -2,6 +2,7 @@ package routes
 
 import (
 	"time"
+	"urlshortener/helpers"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -26,5 +27,18 @@ func ShortenUrl( c *fiber.Ctx) error {
 	if err := c.BodyParser(&body); err!=nil{
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error" : "cannot parse the request body"})
 	}
-	// implementing rate  limnimting
+	// implementing rate  limimting
+
+	// checking url is real or not
+
+	if !govalidator.IsUrl(body.URL) {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error" : "Invalid URL"})
+	}
+// cannot give same domain name as url shortener
+	if !helpers.RemoveDomainError(body.URL) {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error" : "cannot process the same domain give another domain"})
+	}
+	//  enforce https and SSL
+
+	body.URL =  helpers.EnforceHTTP(body.URL)
 }
